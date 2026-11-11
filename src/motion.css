@@ -1,0 +1,342 @@
+/* motion.css — Atlas 流转动画（派遣 / 回收 / 交接 / 文件光点）
+ * 契约：offset-path 由 inline style 提供；本文件不设置 offset-path，transform 不覆盖路径运动。
+ * 主题变量（由主代理设置，下为浅/深色皆可用的兜底值）：
+ *   --glass-bg  --glass-border  --ink  --glow
+ * 所有动画总长 ≤ 1.8s。
+ */
+
+.atlas-flight,
+.atlas-arrival-slot,
+.atlas-file-dot {
+  --_glass-bg: var(--glass-bg, rgba(255, 255, 255, 0.62));
+  --_glass-border: var(--glass-border, rgba(255, 255, 255, 0.55));
+  --_ink: var(--ink, #1d1d1f);
+  --_glow: var(--glow, rgba(10, 132, 255, 0.45));
+  --_ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --_ease-io: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* ───────── 流转玻璃卡 ───────── */
+.atlas-flight {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 20;
+  box-sizing: border-box;
+  width: var(--flight-w, 180px);
+  height: var(--flight-h, 100px);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 4px;
+  overflow: hidden;
+  border-radius: 18px;
+  color: var(--_ink);
+  background: linear-gradient(145deg, var(--glass-sheen, rgba(255, 255, 255, 0.28)), transparent 55%), var(--_glass-bg);
+  border: 1px solid var(--_glass-border);
+  box-shadow:
+    0 12px 36px -10px var(--_glow),
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 var(--glass-rim, rgba(255, 255, 255, 0.45));
+  pointer-events: none;
+  will-change: offset-distance, transform, opacity;
+  offset-rotate: 0deg;
+  offset-anchor: 50% 50%;
+  offset-distance: 0%;
+  transform-origin: 50% 50%;
+  animation-fill-mode: both;
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .atlas-flight {
+    -webkit-backdrop-filter: blur(18px) saturate(1.5);
+    backdrop-filter: blur(18px) saturate(1.5);
+  }
+}
+
+.atlas-flight > span {
+  font: 600 13px/18px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.atlas-flight > small {
+  font: 400 11px/14px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+  opacity: 0.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 柔光扫过（克制的实验室高光） */
+.atlas-flight::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(105deg, transparent 35%, var(--glass-rim, rgba(255, 255, 255, 0.4)) 50%, transparent 65%);
+  transform: translateX(-120%);
+  animation: atlas-sheen 1.1s 0.25s var(--_ease-io) both;
+}
+
+/* 派出：从父卡槽抽出 → 越过所有卡片沿曲线飞跃 → 落点淡出交给展开的子卡（1.6s） */
+.atlas-dispatch-flight {
+  animation: atlas-dispatch 1.6s var(--_ease-io) both;
+}
+
+/* 回收：抬升折叠 → 沿真实线路飞回 → 缩成卡槽吸附（1.7s） */
+.atlas-return-flight {
+  animation: atlas-return 1.7s var(--_ease-io) both;
+}
+
+/* 横向交接：保持平稳，轻微倾斜（1.4s） */
+.atlas-relay-flight {
+  animation: atlas-relay 1.4s var(--_ease-io) both;
+}
+
+@keyframes atlas-dispatch {
+  0% {
+    offset-distance: 0%;
+    opacity: 0;
+    transform: perspective(700px) scale(0.2, 0.06) rotateX(0deg);
+    filter: blur(2px);
+  }
+  14% {
+    offset-distance: 2%;
+    opacity: 1;
+    transform: perspective(700px) scale(1, 1) rotateX(-6deg); /* 抽出 */
+    filter: blur(0);
+  }
+  32% {
+    offset-distance: 12%;
+    transform: perspective(700px) scale(1.04) rotateX(-4deg) rotateY(3deg);
+  }
+  78% {
+    offset-distance: 92%;
+    opacity: 1;
+    transform: perspective(700px) scale(1.02) rotateX(2deg) rotateY(-3deg);
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
+    transform: perspective(700px) scale(0.96) rotateX(0deg);
+  }
+}
+
+@keyframes atlas-return {
+  0% {
+    offset-distance: 0%;
+    opacity: 0;
+    transform: perspective(700px) scale(1) rotateX(0deg);
+  }
+  8% {
+    offset-distance: 0%;
+    opacity: 1;
+    transform: perspective(700px) scale(1.05) rotateX(0deg); /* 抬升 */
+  }
+  24% {
+    offset-distance: 4%;
+    opacity: 1;
+    transform: perspective(700px) scale(0.86, 0.72) rotateX(14deg); /* 折叠 */
+  }
+  76% {
+    offset-distance: 88%;
+    opacity: 1;
+    transform: perspective(700px) scale(0.62, 0.4) rotateX(8deg);
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
+    transform: perspective(700px) scale(0.2, 0.06) rotateX(0deg); /* 吸附卡槽 */
+  }
+}
+
+@keyframes atlas-relay {
+  0% {
+    offset-distance: 0%;
+    opacity: 0;
+    transform: perspective(700px) scale(0.9) rotateY(0deg);
+  }
+  14% {
+    offset-distance: 3%;
+    opacity: 1;
+    transform: perspective(700px) scale(1) rotateY(4deg);
+  }
+  86% {
+    offset-distance: 97%;
+    opacity: 1;
+    transform: perspective(700px) scale(1) rotateY(-4deg);
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
+    transform: perspective(700px) scale(0.92) rotateY(0deg);
+  }
+}
+
+@keyframes atlas-sheen {
+  to {
+    transform: translateX(120%);
+  }
+}
+
+/* ───────── 目的卡槽（路径终点，坐标由主代理给出） ─────────
+ * 位置：left/top 可直接 inline，或用 --x/--y（或 --slot-x/--slot-y）。 */
+.atlas-arrival-slot {
+  position: absolute;
+  left: var(--slot-x, var(--x, 0px));
+  top: var(--slot-y, var(--y, 0px));
+  z-index: 19;
+  width: 36px;
+  height: 6px;
+  margin: -3px 0 0 -18px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--_ink) 18%, transparent);
+  pointer-events: none;
+  opacity: 0;
+  animation: atlas-slot-hint 1.8s var(--_ease-out) both;
+}
+
+/* 回收吸附 glow：卡片到达时点亮 */
+.atlas-return-flight ~ .atlas-arrival-slot,
+.atlas-arrival-slot[data-kind="return"],
+.atlas-arrival-slot.is-return {
+  animation: atlas-slot-absorb 1.8s var(--_ease-out) both;
+}
+
+@keyframes atlas-slot-hint {
+  0%, 100% { opacity: 0; transform: scaleX(0.6); }
+  20%, 70% { opacity: 0.7; transform: scaleX(1); }
+}
+
+@keyframes atlas-slot-absorb {
+  0%, 60% {
+    opacity: 0.55;
+    transform: scaleX(1);
+    box-shadow: 0 0 0 transparent;
+  }
+  78% {
+    opacity: 1;
+    transform: scale(1.35, 1.6);
+    background: var(--_glow);
+    box-shadow: 0 0 18px 4px var(--_glow);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1, 1);
+    box-shadow: 0 0 0 transparent;
+  }
+}
+
+/* ───────── 真实节点动画（不使用 display:none，结束后恢复原状） ───────── */
+/* 派出目的卡：飞行卡落点处展开（1.7s，前 ~0.8s 保持隐没以等待落点） */
+.atlas-node-launch {
+  transform-origin: 50% 0%;
+  animation: atlas-node-launch 1.7s var(--_ease-out) both;
+}
+
+@keyframes atlas-node-launch {
+  0%, 68% {
+    opacity: 0;
+    scale: 0.92 0.4;
+    translate: 0 -4px;
+    filter: blur(4px);
+  }
+  88% {
+    opacity: 1;
+    scale: 1.01 1.02;
+    translate: 0 0;
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    scale: 1;
+    translate: 0 0;
+    filter: blur(0);
+  }
+}
+
+/* 回报源卡：短暂抬升/淡去，随后恢复为历史卡（最终状态 opacity 1，不隐藏） */
+.atlas-node-return {
+  animation: atlas-node-return 1.6s var(--_ease-io) both;
+}
+
+@keyframes atlas-node-return {
+  0% {
+    opacity: 1;
+    scale: 1;
+    translate: 0 0;
+    filter: none;
+  }
+  16% {
+    opacity: 1;
+    scale: 1.03;
+    translate: 0 -6px;
+    filter: drop-shadow(0 10px 18px var(--glow, rgba(10, 132, 255, 0.35)));
+  }
+  40%, 62% {
+    opacity: 0.28;
+    scale: 0.97;
+    translate: 0 -2px;
+    filter: none;
+  }
+  100% {
+    opacity: 1;
+    scale: 1;
+    translate: 0 0;
+    filter: none;
+  }
+}
+
+/* ───────── 文件光点（沿同一曲线，蓝色柔光，1.5s） ───────── */
+.atlas-file-dot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 21;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #0a84ff;
+  box-shadow:
+    0 0 6px 2px rgba(10, 132, 255, 0.55),
+    0 0 18px 6px rgba(10, 132, 255, 0.25);
+  pointer-events: none;
+  offset-rotate: 0deg;
+  offset-anchor: 50% 50%;
+  offset-distance: 0%;
+  opacity: 0;
+  will-change: offset-distance, opacity;
+  animation: atlas-file-dot 1.5s var(--_ease-io) both;
+}
+
+@keyframes atlas-file-dot {
+  0% { offset-distance: 0%; opacity: 0; scale: 0.5; }
+  12% { opacity: 1; scale: 1; }
+  88% { opacity: 1; scale: 1; }
+  100% { offset-distance: 100%; opacity: 0; scale: 0.4; }
+}
+
+/* ───────── 减少动态效果 ───────── */
+@media (prefers-reduced-motion: reduce) {
+  .atlas-flight,
+  .atlas-file-dot,
+  .atlas-arrival-slot {
+    display: none !important;
+    animation: none !important;
+  }
+
+  .atlas-flight::after {
+    animation: none !important;
+  }
+
+  .atlas-node-launch,
+  .atlas-node-return {
+    animation: none !important;
+  }
+}

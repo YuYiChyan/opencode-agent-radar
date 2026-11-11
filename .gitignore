@@ -1,0 +1,13 @@
+node_modules/
+.DS_Store
+.env
+.env.*
+*.log
+archive/
+release/
+verification/
+preview/real-quota.json
+INSTALL-NOTES.md
+ARTIFACTS-TEST-NOTES.md
+BACKEND-TEST-DESIGN.md
+EVENTS.md

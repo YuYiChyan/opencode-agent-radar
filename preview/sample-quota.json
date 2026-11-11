@@ -1,0 +1,24 @@
+{
+  "updatedAt": 0,
+  "state": "ready",
+  "rows": [
+    {
+      "key": "demo-openai-week",
+      "label": "演示账号 · 每周",
+      "value": "71%",
+      "percent": 71,
+      "providerID": "openai",
+      "valueType": "percent",
+      "status": "模拟数据 · 非真实额度"
+    },
+    {
+      "key": "demo-gemini-day",
+      "label": "演示账号 · 每日",
+      "value": "86%",
+      "percent": 86,
+      "providerID": "google",
+      "valueType": "percent",
+      "status": "模拟数据 · 非真实额度"
+    }
+  ]
+}
